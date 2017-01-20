@@ -17,13 +17,13 @@ Options:
     --wants_accomodation=<N> [defult: N]
 '''
 
-from app.amity import Amity
 import sys
 import cmd
 import os
 import time
 from termcolor import colored
 from docopt import docopt, DocoptExit
+from app.amity import Amity
 
 
 def docopt_cmd(func):
@@ -81,13 +81,22 @@ class AmityApplication(cmd.Cmd):
 
     @docopt_cmd
     def do_add_person(self, arg):
-        '''Usage: add_person <firstname> <lastname> <role> [--a=Y] '''
+        '''Usage: add_person <firstname> <lastname> <role> [--a=N] '''
         first_name = arg["<firstname>"]
         last_name = arg["<lastname>"]
         role = arg["<role>"]
         wants_accomodation = arg["--a"]
         # print(wants_accomodation)
         self.amity.add_person(first_name, last_name, role.upper(), str(wants_accomodation))
+        print("\n")
+
+    @docopt_cmd
+    def do_allocate(self, arg):
+        '''Usage: allocate <first_name> <last_name> <room_name>'''
+        first_name = arg["<first_name>"]
+        last_name = arg["<last_name>"]
+        room_name = arg["<room_name>"]
+        self.amity.allocate(first_name, last_name, room_name)
         print("\n")
 
     @docopt_cmd

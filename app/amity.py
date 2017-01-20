@@ -66,17 +66,18 @@ class Amity(object):
                 office = self.select_random_office()
                 if office is False:
                     self.office_waiting_list.append(full_name)
-                    msg = "No office available at this time"
-                    print(msg)
+                    msg1 = "No office available at this time"
+                    msg2 = "Added to waiting list"
+                    o_msg = msg1 + "\n" + msg2
                 else:
                     self.room_allocations["office"][office].append(full_name)
-                    msg = "Allocated office " + office
-                    print(msg)
+                    o_msg = "Allocated office " + office
 
                 if role == "FELLOW":
                     self.all_fellow.append(full_name)
                     msg = ("%s - fellow added successfully" % full_name)
                     print(msg)
+                    print(o_msg)
 
                     # if fellow accomodation is yes allocate living
                     if accomodation == "Y":
@@ -85,6 +86,7 @@ class Amity(object):
                             self.living_space_waiting_list.append(full_name)
                             msg2 = "No Living space available at this time"
                             print(msg2)
+                            print("Added to waiting list")
                         else:
                             self.room_allocations["living"][living].append(
                                 full_name)
@@ -96,6 +98,7 @@ class Amity(object):
                     self.all_staff.append(full_name)
                     msg = ("%s - staff added successfully" % full_name)
                     print(msg)
+                    print(o_msg)
                     if accomodation == "Y":
                         msg2 = "Sorry! staff don't get accomodation"
                         print(msg2)
@@ -127,6 +130,29 @@ class Amity(object):
         for room_x in self.room_allocations[room_type].keys():
             if full_name in self.room_allocations[room_type][room_x]:
                 return(room_x)
+
+    def allocate(self, first_name, last_name, room_name):
+        full_name = (first_name + " " + last_name).upper()
+        room_name = room_name.upper()
+
+        if full_name not in self.living_space_waiting_list and self.office_waiting_list:
+            print(full_name + " - Not in waiting list")
+
+        elif room_name not in self.all_rooms:
+            print("Incorrect room name - " + room_name)
+
+        elif full_name in self.all_staff and room_name in self.all_living:
+            print("Staff don't get living")
+
+        elif full_name in self.office_waiting_list and room_name in self.all_offices:
+            if len(self.room_allocations["office"][room_name]) < 6:
+                self.room_allocations["office"][room_name].append(room_name)
+            print("office full")
+
+        elif full_name in self.living_space_waiting_list and room_name in self.all_living:
+            if len(self.room_allocations["living"][room_name]) < 4:
+                self.room_allocations["living"][room_name].append(full_name)
+            print("living full")
 
     def reallocate_person(self, first_name, last_name, room_name):
         full_name = (first_name + " " + last_name).upper()
@@ -312,7 +338,6 @@ class Amity(object):
                     f.write(allocations)
                 f.write("\n\n\n")
 
-    # person created, allocated randomly then reallocate
     def save_state(self, database="default"):
         # initializing db
         db = database + ".sqlite"
