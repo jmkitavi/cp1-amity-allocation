@@ -1,30 +1,26 @@
 """app/amity"""
-from random import choice
 import sys
 import os
-import subprocess
 import time
 import sqlite3
-
-from app.db.database import Base, Employees, Allocations, Rooms, DatabaseCreator, Unallocated
+from random import choice
 from sqlalchemy import select
+from app.db.database import Base, Employees, Allocations, Rooms, DatabaseCreator, Unallocated
 
 
 class Amity(object):
     def __init__(self):
-        self.all_people = []
-        self.all_fellow = ["h n"]
-        self.all_staff = ["j n"]
-        self.office_waiting_list = ["f f", "f g"]  # all staff without office
-        self.living_space_waiting_list = ["s g", "g m"]  # all fellow without living
-        self.all_rooms = ["VALHALLA", "JAVA", "PHP"]
-        self.all_offices = ["VALHALLA"]
-        self.all_living = ["JAVA", "PHP"]
+        self.all_people = [""]
+        self.all_fellow = []
+        self.all_staff = []
+        self.office_waiting_list = []  # all staff without office
+        self.living_space_waiting_list = []  # all fellow without living
+        self.all_rooms = []
+        self.all_offices = []
+        self.all_living = []
         self.room_allocations = {
-            "office": {
-                "VALHALLA": ["J M"]},
-            "living": {
-                "JAVA": [], "PHP": []}}
+            "office": {},
+            "living": {}}
 
     def create_room(self, room_name, room_type):
         room_type = room_type.upper()
@@ -36,7 +32,7 @@ class Amity(object):
             # return(msg)
         else:
             # check if room type is correct
-            if(room_type in ('OFFICE', 'LIVING')):
+            if room_type in ('OFFICE', 'LIVING'):
                 self.all_rooms.append(room_name)
 
                 if room_type == "OFFICE":
@@ -58,10 +54,10 @@ class Amity(object):
     def add_person(self, first_name, last_name, role, accomodation="N"):
         full_name = (first_name + " " + last_name).upper()
         role = role.upper()
-        accomodation = accomodation
+        accomodation = accomodation.upper()
 
         if full_name in self.all_people:
-            return ("%s already used " % full_name)
+            print("%s already used " % full_name)
         else:
             if(role in ("FELLOW", "STAFF")):
                 self.all_people.append(full_name)
@@ -88,11 +84,13 @@ class Amity(object):
                         if living is False:
                             self.living_space_waiting_list.append(full_name)
                             msg2 = "No Living space available at this time"
+                            print(msg2)
                         else:
                             self.room_allocations["living"][living].append(
                                 full_name)
                             msg2 = "Allocated living space " + living
-                        print(msg2)
+                            print(msg2)
+                        # print(msg2)
 
                 elif role == "STAFF":
                     self.all_staff.append(full_name)
@@ -103,7 +101,7 @@ class Amity(object):
                         print(msg2)
 
             else:
-                print("Error! Please indicate correct role")
+                print("Error! Please indicate correct role.\nEither Fellow or Staff")
 
     def select_random_office(self):
         available = []
@@ -113,7 +111,7 @@ class Amity(object):
         if len(available) < 1:
             return False
         office = choice(available)
-        return(office)
+        return office
 
     def select_random_living(self):
         available = []
@@ -123,18 +121,16 @@ class Amity(object):
         if len(available) < 1:
             return False
         living = choice(available)
-        return(living)
+        return living
 
     def if_was_assigned(self, full_name, room_type):
-        rooms = []
-        for x in self.room_allocations[room_type].keys():
-            rooms.append(x)
-        for room in rooms:
-            if full_name in self.room_allocations[room_type][room]:
-                return(room)
+        for room_x in self.room_allocations[room_type].keys():
+            if full_name in self.room_allocations[room_type][room_x]:
+                return(room_x)
 
     def reallocate_person(self, first_name, last_name, room_name):
         full_name = (first_name + " " + last_name).upper()
+        room_name = room_name.upper()
 
         # check if person exists
         if full_name in self.all_people:
@@ -147,11 +143,11 @@ class Amity(object):
 
                 # check if person had living space before reallocation
                 if previous_room is None:
-                    return("No room assigned, can't be re-assigned")
+                    print("No room assigned, can't be re-assigned")
 
                 # check if reallocation is to current living space
                 elif previous_room is room_name:
-                    return("Can't reallocate to same room")
+                    print("Can't reallocate to same room")
                 else:
                     # checking availability of new living space and reallocate
                     if len(self.room_allocations["living"][room_name]) < 4:
@@ -162,12 +158,12 @@ class Amity(object):
                         self.room_allocations["living"][room_name].append(
                             full_name)
 
-                        return("Reallocated from " + previous_room +
-                               " to " + room_name)
+                        print("Reallocated " + full_name + " from " + previous_room +
+                              " to " + room_name)
                     # if living space is full
                     else:
-                        return("Reallocation failed! %s living space full"
-                               % room_name)
+                        print("Reallocation failed! %s living space full"
+                              % room_name)
 
             # check if room exists and is an office
             elif room_name in self.all_rooms and room_name in self.all_offices:
@@ -177,11 +173,11 @@ class Amity(object):
 
                 # check if person had office before reallocation
                 if previous_room is None:
-                    return("No office assigned, can't be re-assigned")
+                    print("No office assigned, can't be re-assigned")
 
                 # check if reallocation is to current office
                 elif previous_room is room_name:
-                    return("Can't reallocate to current room")
+                    print("Can't reallocate to current room")
                 else:
                     # check availability of new office and reallocate
                     if len(self.room_allocations["office"][room_name]) < 6:
@@ -192,16 +188,16 @@ class Amity(object):
                         self.room_allocations["office"][room_name].append(
                             full_name)
 
-                        return("Reallocated from " + previous_room +
-                               " to " + room_name)
+                        print("Reallocated " + full_name + " from " + previous_room +
+                              " to " + room_name)
                     # if office is full
                     else:
-                        return("Reallocation failed! %s office full"
-                               % room_name)
+                        print("Reallocation failed! %s office full"
+                              % room_name)
             else:
-                return("Room name doesn't exist!")
+                print("Room name - "+room_name+" doesn't exist!")
         else:
-            return("Employee name doesn't exist")
+            print("Employee name - " +full_name + " doesn't exist")
 
     def load_people(self, file_name):
         # add people from txt
@@ -220,7 +216,6 @@ class Amity(object):
                 # adding people if line has 3 values
                 self.add_person(reg[0], reg[1], reg[2])
             else:
-
                 # if data doesn't match format
                 return("Incorrect data format")
 
@@ -234,7 +229,6 @@ class Amity(object):
         for name in self.all_fellow:
             print("\nFellows")
             print(name + " - Fellow")
-        print("\n")
 
     def print_unallocated(self, file_name=None):
         office_waiting = len(self.office_waiting_list)
@@ -281,7 +275,7 @@ class Amity(object):
         global room_type
 
         if room_name not in self.all_rooms:
-            print("Sorry! Room is none existent")
+            msg = ("Sorry! Room is none existent")
         else:
             # check if room exists and is an office
             if room_name in self.all_offices:
@@ -297,18 +291,19 @@ class Amity(object):
             if len(self.room_allocations[room_type][room_name]) == 0:
                 occupants = "No occupants"
             msg = (h_line + "\n" + room_details + "\n" + h_line + "\n" + occupants + "\n\n")
-        # print(msg)
         return(msg)
 
     def print_room(self, room_name):
         print(self.print_data(room_name))
 
-    def print_allocations(self, file_name=""):
+    def print_allocations(self, file_name=None):
+        if len(self.all_rooms) < 1:
+            print("No rooms available")
         for room in self.all_rooms:
             allocations = self.print_data(room)
             print(allocations)
 
-        if file_name is not None or "":
+        if file_name:
             with open(file_name, 'a') as f:
                 time_stamp = time.strftime("%Y-%m-%d %H:%M")
                 f.write("\nAllocations as of " + time_stamp + "\n")
@@ -424,6 +419,8 @@ class Amity(object):
         Base.metadata.bind = db.engine
         db_session = db.session
 
+        print("Loading data...")
+        print("Loading Employees")
         people_in_db = select([Employees])
         result = db_session.execute(people_in_db)
         for person in result.fetchall():
@@ -433,6 +430,7 @@ class Amity(object):
             elif person.emp_role.upper() == "STAFF":
                 self.all_staff.append(person.emp_name)
 
+        print("Loading Rooms")
         rooms_in_db = select([Rooms])
         result = db_session.execute(rooms_in_db)
         for room in result.fetchall():
@@ -444,6 +442,7 @@ class Amity(object):
                 self.all_living.append(room.room_name)
                 self.room_allocations["living"][room.room_name] = []
 
+        print("Loading Allocations")
         allocations_in_db = select([Allocations])
         result = db_session.execute(allocations_in_db)
         for allocations in result.fetchall():
@@ -464,3 +463,5 @@ class Amity(object):
                 for x in pple:
                     if x not in self.living_space_waiting_list:
                         self.living_space_waiting_list.append(x)
+
+        print("Loading from " + database + " completed successfully")

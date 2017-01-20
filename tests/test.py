@@ -1,9 +1,6 @@
 
 """test/tests"""
 import os
-# import sys
-# sys.path.append('../app')
-
 import unittest
 from amity.app import amity
 
@@ -16,6 +13,7 @@ class TestCase(unittest.TestCase):
     def test_create_office(self):
         rooms_count_before = len(self.amity.all_rooms)
         offices_count_before = len(self.amity.all_offices)
+
         # test message after adding Office
         self.assertEqual(self.amity.create_room(
             "Oculus", "Office"), "Office Added")
@@ -38,6 +36,7 @@ class TestCase(unittest.TestCase):
     def test_create_living(self):
         rooms_count_before = len(self.amity.all_rooms)
         living_count_before = len(self.amity.all_living)
+
         # test return message after adding living space
         self.assertEqual(self.amity.create_room(
             "Golang", "living"), "Living space Added")
@@ -101,10 +100,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(people_count_before + 1, people_count_after)
         self.assertEqual(staff_count_before + 1, staff_count_after)
 
-        # test if person was assigned to office
-        # self.assertEqual(len(
-        #     self.amity.room_allocations["office"]["VALHALLA"]), 1)
-
     def test_add_fellow(self):
         people_count_before = len(self.amity.all_people)
         fellow_count_before = len(self.amity.all_fellow)
@@ -120,10 +115,6 @@ class TestCase(unittest.TestCase):
         # check if fellow and people count has increased by 1
         self.assertEqual(people_count_before + 1, people_count_after)
         self.assertEqual(fellow_count_before + 1, fellow_count_after)
-
-        # # test if fellow assigned living
-        # self.assertEqual(len(
-        #     self.amity.room_allocations["living"]["JAVA"]), 1)
 
     def test_add_person_existing(self):
         people_count_before = len(self.amity.all_people)
@@ -175,7 +166,6 @@ class TestCase(unittest.TestCase):
         dirname = os.path.dirname(os.path.abspath(__file__))
         # load data
         self.amity.load_people(os.path.join(dirname, "load.txt"))
-        # self.amity.load_people("load.txt")
         # check if file exists
         self.assertTrue(os.path.isfile("load.txt"))
         # check if all people were added
@@ -209,9 +199,6 @@ class TestCase(unittest.TestCase):
         # check if database exists
         self.assertTrue(os.path.isfile("data.db"))
 
-    def test_if_was_assigned(self):
-        pass
-
 
 # if __name__ == '__main__':
-    # unittest.main()
+#     unittest.main()

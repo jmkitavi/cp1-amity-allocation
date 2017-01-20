@@ -1,8 +1,8 @@
 '''
 Usage:
-    add_person <first_name> <last_name> <role> [--wants_accomodation=N]
+    add_person <first_name> <last_name> <role> [--a=N]
     create_room <room_name> <room_type>
-    reallocate_person <full_name> <new_room_name>
+    reallocate_person <first_name> <last_name> <new_room_name>
     load_people <filename>
     print_people
     print_allocations [--o=filename]
@@ -22,8 +22,7 @@ import sys
 import cmd
 import os
 import time
-from termcolor import cprint, colored
-from pyfiglet import figlet_format
+from termcolor import colored
 from docopt import docopt, DocoptExit
 
 
@@ -67,17 +66,8 @@ def introduction():
     print(border)
 
 
-# def save_state_on_interrupt():
-#     time_stamp = time.strftime("%Y-%m-%d-%H:%M")
-#     db_name = "backup-at-" + time_stamp
-#     print("Saving state to " + db_name)
-#     Amity.save_state(db_name)
-
-
 class AmityApplication(cmd.Cmd):
     amity = Amity()
-
-    # cprint(figlet_format('AMITY', font='banner3-D'), 'cyan', attrs=['bold'])
 
     prompt = "(amity)"
 
@@ -87,17 +77,18 @@ class AmityApplication(cmd.Cmd):
         room_name = arg["<room_name>"]
         room_type = arg["<room_type>"]
         self.amity.create_room(room_name, room_type)
+        print("\n")
 
     @docopt_cmd
     def do_add_person(self, arg):
-        '''Usage: add_person <first_name> <last_name> <role> [accomodation]'''
-        first_name = arg["<first_name>"]
-        last_name = arg["<last_name>"]
+        '''Usage: add_person <firstname> <lastname> <role> [--a=Y] '''
+        first_name = arg["<firstname>"]
+        last_name = arg["<lastname>"]
         role = arg["<role>"]
-        accomodation = arg["accomodation"]
-        if accomodation is None:
-            accomodation = "N"
-        self.amity.add_person(first_name, last_name, role, accomodation=accomodation)
+        wants_accomodation = arg["--a"]
+        # print(wants_accomodation)
+        self.amity.add_person(first_name, last_name, role.upper(), str(wants_accomodation))
+        print("\n")
 
     @docopt_cmd
     def do_reallocate_person(self, arg):
@@ -106,51 +97,61 @@ class AmityApplication(cmd.Cmd):
         last_name = arg["<last_name>"]
         room_name = arg["<room_name>"]
         self.amity.reallocate_person(first_name, last_name, room_name)
+        print("\n")
 
     @docopt_cmd
     def do_load_people(self, arg):
         '''Usage: load_people <file_name>'''
         file_name = arg["<file_name>"]
         self.amity.load_people(file_name)
+        print("\n")
 
     @docopt_cmd
     def do_print_unallocated(self, arg):
         '''Usage: print_unallocated [--o=file_name]'''
         file_name = arg["--o"] or None
         self.amity.print_unallocated(file_name)
+        print("\n")
 
     @docopt_cmd
     def do_print_room(self, arg):
         '''Usage: print_room <room_name>'''
         room_name = arg["<room_name>"]
         self.amity.print_room(room_name)
+        print("\n")
 
     @docopt_cmd
     def do_print_people(self, arg):
         '''Usage: print_people'''
         self.amity.print_people()
+        print("\n")
 
     @docopt_cmd
     def do_print_allocations(self, arg):
         '''Usage: print_allocations [--o=file_name]'''
         file_name = arg["--o"] or None
         self.amity.print_allocations(file_name)
+        print("\n")
 
     @docopt_cmd
     def do_load_state(self, arg):
         '''Usage: load_state <database>'''
         database = arg["<database>"]
         self.amity.load_state(database)
+        print("\n")
 
     @docopt_cmd
     def do_save_state(self, arg):
         '''Usage: save_state <database>'''
         database = arg["<database>"]
         self.amity.save_state(database)
+        print("\n")
 
     @docopt_cmd
     def do_quit(self, arg):
         '''Usage: quit'''
+        print("The end is near".center(30))
+        print("\n")
         exit()
 
 if __name__ == '__main__':
