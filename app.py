@@ -86,8 +86,7 @@ class AmityApplication(cmd.Cmd):
         last_name = arg["<lastname>"]
         role = arg["<role>"]
         wants_accomodation = arg["--a"]
-        # print(wants_accomodation)
-        self.amity.add_person(first_name, last_name, role.upper(), str(wants_accomodation))
+        print(self.amity.add_person(first_name, last_name, role, str(wants_accomodation)))
         print("\n")
 
     @docopt_cmd
@@ -169,6 +168,6 @@ if __name__ == '__main__':
         AmityApplication().cmdloop()
     except KeyboardInterrupt:
         time_stamp = time.strftime("%Y-%m-%d-%H:%M")
-        db_name = "backup-at-" + time_stamp
-        print("\nKeyBoardInterrupt!!\nSaving state to " + db_name + "\n")
+        db_name = "backup-at-{0}".format(time_stamp)
+        print("\nKeyBoardInterrupt!!\nSaving state to {0} \n".format(db_name))
         AmityApplication.amity.save_state(db_name)

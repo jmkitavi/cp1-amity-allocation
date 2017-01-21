@@ -4,6 +4,7 @@ import os
 import time
 import sqlite3
 from random import choice
+from termcolor import colored
 from sqlalchemy import select
 from app.db.database import Base, Employees, Allocations, Rooms, DatabaseCreator, Unallocated
 
@@ -27,9 +28,7 @@ class Amity(object):
         room_name = room_name.upper()
         # check if room name exists
         if room_name in self.all_rooms:
-            msg = ("%s - room name already used" % room_name)
-            print(msg)
-            # return(msg)
+            msg = colored("Sorry! {0} - room name already used".format(room_name), "red")
         else:
             # check if room type is correct
             if room_type in ('OFFICE', 'LIVING'):
@@ -38,18 +37,16 @@ class Amity(object):
                 if room_type == "OFFICE":
                     self.all_offices.append(room_name)
                     self.room_allocations["office"][room_name] = []
-                    msg = ("%s - office added successfully" % room_name)
-                    print(msg)
-                    # return(msg)
+                    msg = "{0} - office added successfully".format(room_name)
 
                 elif room_type == 'LIVING':
                     self.all_living.append(room_name)
                     self.room_allocations["living"][room_name] = []
-                    msg = ("%s - living space added successfully" % room_name)
-                    print(msg)
+                    msg = "{0} - living space added successfully".format(room_name)
 
             else:
-                print("%s is a wrong room type" % room_type)
+                msg = (colored("{0} is a wrong room type".format(room_type), "red") + "\n\tOffice or Living")
+        return msg
 
     def add_person(self, first_name, last_name, role, accomodation="N"):
         full_name = (first_name + " " + last_name).upper()
@@ -57,54 +54,49 @@ class Amity(object):
         accomodation = accomodation.upper()
 
         if full_name in self.all_people:
-            print("%s already used " % full_name)
+            return colored("Sorry! Name {0} already used ".format(full_name), "red")
         else:
-            if(role in ("FELLOW", "STAFF")):
+            if role in ("FELLOW", "STAFF"):
+                living_msg = ""
                 self.all_people.append(full_name)
 
                 # assign random office to everyone
                 office = self.select_random_office()
                 if office is False:
                     self.office_waiting_list.append(full_name)
-                    msg1 = "No office available at this time"
-                    msg2 = "Added to waiting list"
-                    o_msg = msg1 + "\n" + msg2
+                    msg1 = colored("No office available at this time\n", "red")
+                    msg2 = "Added to office waiting list\n"
+                    office_msg = msg1 + msg2
                 else:
                     self.room_allocations["office"][office].append(full_name)
-                    o_msg = "Allocated office " + office
+                    office_msg = "Allocated office {0}".format(office)
 
                 if role == "FELLOW":
                     self.all_fellow.append(full_name)
-                    msg = ("%s - fellow added successfully" % full_name)
-                    print(msg)
-                    print(o_msg)
+                    add_msg = "{0} - fellow, added successfully\n".format(full_name)
 
                     # if fellow accomodation is yes allocate living
                     if accomodation == "Y":
                         living = self.select_random_living()
                         if living is False:
                             self.living_space_waiting_list.append(full_name)
-                            msg2 = "No Living space available at this time"
-                            print(msg2)
-                            print("Added to waiting list")
+                            msg1 = colored("No Living space available at this time\n", "red")
+                            msg2 = "Added to living space waiting list"
+                            living_msg = msg1 + msg2
                         else:
                             self.room_allocations["living"][living].append(
                                 full_name)
-                            msg2 = "Allocated living space " + living
-                            print(msg2)
-                        # print(msg2)
+                            living_msg = "Allocated living space {0}".format(living)
 
                 elif role == "STAFF":
                     self.all_staff.append(full_name)
-                    msg = ("%s - staff added successfully" % full_name)
-                    print(msg)
-                    print(o_msg)
-                    if accomodation == "Y":
-                        msg2 = "Sorry! staff don't get accomodation"
-                        print(msg2)
+                    add_msg = ("{0} - staff, added successfully\n".format(full_name))
 
+                    if accomodation == "Y":
+                        living_msg = colored("Sorry! staff don't get accomodation", "red")
+                return add_msg + office_msg + living_msg
             else:
-                print("Error! Please indicate correct role.\nEither Fellow or Staff")
+                return "Error! Please indicate correct role.\n\t Fellow or Staff"
 
     def select_random_office(self):
         available = []
