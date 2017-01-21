@@ -13,8 +13,6 @@ class Employees(Base):
     __tablename__ = "employees"
     emp_name = Column(String(32), primary_key=True, nullable=False)
     emp_role = Column(String(32), nullable=False)
-    # office_allocation = Column(String(10))
-    # living_allocation = Column(String(10))
 
 
 class Rooms(Base):
