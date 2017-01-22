@@ -297,9 +297,6 @@ class Amity(object):
                 f.write(fell_msg)
                 for fellow in self.living_space_waiting_list:
                     f.write((fellow) + "\n")
-            # else:
-                # print("Please indicate a valid file name and extension")
-                # return("Please indicate a valid file name and extension")
 
     def print_data(self, room_name):
         room_name = room_name.upper()
