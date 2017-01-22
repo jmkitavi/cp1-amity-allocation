@@ -2,6 +2,7 @@
 Usage:
     add_person <first_name> <last_name> <role> [--a=N]
     create_room <room_name> <room_type>
+    allocate <first_name> <last_name> <room_name>
     reallocate_person <first_name> <last_name> <new_room_name>
     load_people <filename>
     print_people
@@ -73,7 +74,10 @@ class AmityApplication(cmd.Cmd):
 
     @docopt_cmd
     def do_create_room(self, arg):
-        """Usage: create_room <room_name> <room_type>"""
+        """
+        Creates a room(s) in amity
+        Usage: create_room <room_name> <room_type> ...
+        """
         room_name = arg["<room_name>"]
         room_type = arg["<room_type>"]
         print(self.amity.create_room(room_name, room_type))
@@ -81,7 +85,10 @@ class AmityApplication(cmd.Cmd):
 
     @docopt_cmd
     def do_add_person(self, arg):
-        """Usage: add_person <firstname> <lastname> <role> [--a=N]"""
+        """
+        Add new people to amity. Fellows and Staff
+        Usage: add_person <firstname> <lastname> <role> [--a=N]
+        """
         first_name = arg["<firstname>"]
         last_name = arg["<lastname>"]
         role = arg["<role>"]
@@ -91,27 +98,33 @@ class AmityApplication(cmd.Cmd):
 
     @docopt_cmd
     def do_allocate(self, arg):
-        """Usage: allocate <first_name> <last_name> <room_name>"""
+        """
+        Allocates someone in unallocated a room
+        Usage: allocate <first_name> <last_name> <room_name>
+        """
         first_name = arg["<first_name>"]
         last_name = arg["<last_name>"]
         room_name = arg["<room_name>"]
-        self.amity.allocate(first_name, last_name, room_name)
+        print(self.amity.allocate(first_name, last_name, room_name))
         print("\n")
 
     @docopt_cmd
     def do_reallocate_person(self, arg):
-        """Usage: reallocate_person <first_name> <last_name> <room_name>"""
+        """
+        Re-allocates someone from one room to another
+        Usage: reallocate_person <first_name> <last_name> <room_name>
+        """
         first_name = arg["<first_name>"]
         last_name = arg["<last_name>"]
         room_name = arg["<room_name>"]
-        self.amity.reallocate_person(first_name, last_name, room_name)
+        print(self.amity.reallocate_person(first_name, last_name, room_name))
         print("\n")
 
     @docopt_cmd
     def do_load_people(self, arg):
         """Usage: load_people <file_name>"""
         file_name = arg["<file_name>"]
-        self.amity.load_people(file_name)
+        print(self.amity.load_people(file_name))
         print("\n")
 
     @docopt_cmd
@@ -123,43 +136,61 @@ class AmityApplication(cmd.Cmd):
 
     @docopt_cmd
     def do_print_room(self, arg):
-        """Usage: print_room <room_name>"""
+        """
+        Prints occupants in a room
+        Usage: print_room <room_name>
+        """
         room_name = arg["<room_name>"]
-        self.amity.print_room(room_name)
+        print(self.amity.print_room(room_name))
         print("\n")
 
     @docopt_cmd
     def do_print_people(self, arg):
-        """Usage: print_people"""
-        self.amity.print_people()
+        """
+        Print all people in amity. Fellows and Staff
+        Usage: print_people
+        """
+        print(self.amity.print_people())
         print("\n")
 
     @docopt_cmd
     def do_print_allocations(self, arg):
-        """Usage: print_allocations [--o=file_name]"""
+        """
+        Prints out allocations to scree and option file
+        Usage: print_allocations [--o=file_name]
+        """
         file_name = arg["--o"] or None
-        self.amity.print_allocations(file_name)
+        print(self.amity.print_allocations(file_name))
         print("\n")
 
     @docopt_cmd
     def do_load_state(self, arg):
-        """Usage: load_state <database>"""
+        """
+        Loads amity state from a database
+        Usage: load_state <database>
+        """
         database = arg["<database>"]
-        self.amity.load_state(database)
+        print(self.amity.load_state(database))
         print("\n")
 
     @docopt_cmd
     def do_save_state(self, arg):
-        """Usage: save_state <database>"""
+        """
+        Saves amity state to a database
+        Usage: save_state <database>
+        """
         database = arg["<database>"]
-        self.amity.save_state(database)
+        print(self.amity.save_state(database))
         print("\n")
 
     @docopt_cmd
     def do_quit(self, arg):
-        """Usage: quit"""
-        print("The end is near".center(30))
-        print("\n")
+        """
+        Exits Amity
+        Usage: quit
+        """
+        print(colored("The derp is strong with this one".center(40), "red"))
+        print("GOOD BYE!!".center(30))
         exit()
 
 if __name__ == '__main__':
