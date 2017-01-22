@@ -62,7 +62,7 @@ class Amity(object):
 
                 # assign random office to everyone
                 office = self.select_random_office()
-                if office is False:
+                if not office:
                     self.office_waiting_list.append(full_name)
                     msg1 = colored("No office available at this time\n", "red")
                     msg2 = "Added to office waiting list\n"
@@ -78,7 +78,7 @@ class Amity(object):
                     # if fellow accomodation is yes allocate living
                     if accomodation == "Y":
                         living = self.select_random_living()
-                        if living is False:
+                        if not living:
                             self.living_space_waiting_list.append(full_name)
                             msg1 = colored("No Living space available at this time\n", "red")
                             msg2 = "Added to living space waiting list"
@@ -127,24 +127,35 @@ class Amity(object):
         full_name = (first_name + " " + last_name).upper()
         room_name = room_name.upper()
 
-        if full_name not in self.living_space_waiting_list and self.office_waiting_list:
-            print(full_name + " - Not in waiting list")
+        if full_name not in self.all_people:
+            msg = "{0} - name doesn't exist"
 
         elif room_name not in self.all_rooms:
-            print("Incorrect room name - " + room_name)
+            msg = "Incorrect room name - {0}".format(room_name)
+
+        elif full_name not in self.living_space_waiting_list and self.office_waiting_list:
+            msg = "{0} - Not in waiting list".format(full_name)
 
         elif full_name in self.all_staff and room_name in self.all_living:
-            print("Staff don't get living")
+            msg = "Staff don't get living space"
 
         elif full_name in self.office_waiting_list and room_name in self.all_offices:
             if len(self.room_allocations["office"][room_name]) < 6:
-                self.room_allocations["office"][room_name].append(room_name)
-            print("office full")
+                self.room_allocations["office"][room_name].append(full_name)
+                self.office_waiting_list.remove(full_name)
+                msg = "{0} successfully assigned office - {1}".format(full_name, room_name)
+            else:
+                msg = "Office - {0} full".format(room_name)
 
         elif full_name in self.living_space_waiting_list and room_name in self.all_living:
             if len(self.room_allocations["living"][room_name]) < 4:
                 self.room_allocations["living"][room_name].append(full_name)
-            print("living full")
+                self.living_space_waiting_list.remove(full_name)
+                msg = "{0} successfully assigned living space - {1}".format(full_name, room_name)
+            else:
+                msg = "Living space - {0} full".format(room_name)
+
+        return msg
 
     def reallocate_person(self, first_name, last_name, room_name):
         full_name = (first_name + " " + last_name).upper()
@@ -161,11 +172,11 @@ class Amity(object):
 
                 # check if person had living space before reallocation
                 if previous_room is None:
-                    print("No room assigned, can't be re-assigned")
+                    return "No room assigned, can't be re-assigned"
 
                 # check if reallocation is to current living space
                 elif previous_room is room_name:
-                    print("Can't reallocate to same room")
+                    return "Can't reallocate to same room"
                 else:
                     # checking availability of new living space and reallocate
                     if len(self.room_allocations["living"][room_name]) < 4:
@@ -176,12 +187,10 @@ class Amity(object):
                         self.room_allocations["living"][room_name].append(
                             full_name)
 
-                        print("Reallocated " + full_name + " from " + previous_room +
-                              " to " + room_name)
+                        return "Reallocated {0} from {1} to {2}".format(full_name, previous_room, room_name)
                     # if living space is full
                     else:
-                        print("Reallocation failed! %s living space full"
-                              % room_name)
+                        return "Reallocation failed! {0} living space full".format(room_name)
 
             # check if room exists and is an office
             elif room_name in self.all_rooms and room_name in self.all_offices:
@@ -191,11 +200,11 @@ class Amity(object):
 
                 # check if person had office before reallocation
                 if previous_room is None:
-                    print("No office assigned, can't be re-assigned")
+                    return "No office assigned, can't be re-assigned"
 
                 # check if reallocation is to current office
                 elif previous_room is room_name:
-                    print("Can't reallocate to current room")
+                    return "Can't reallocate to current room"
                 else:
                     # check availability of new office and reallocate
                     if len(self.room_allocations["office"][room_name]) < 6:
@@ -206,47 +215,52 @@ class Amity(object):
                         self.room_allocations["office"][room_name].append(
                             full_name)
 
-                        print("Reallocated " + full_name + " from " + previous_room +
-                              " to " + room_name)
+                        return "Reallocated {0} from {1} to {2}".format(full_name, previous_room, room_name)
+
                     # if office is full
                     else:
-                        print("Reallocation failed! %s office full"
-                              % room_name)
+                        return "Reallocation failed! {0} office full".format(room_name)
             else:
-                print("Room name - "+room_name+" doesn't exist!")
+                return "Room name - {0} doesn't exist!".format(room_name)
         else:
-            print("Employee name - " +full_name + " doesn't exist")
+            return "Employee name - {0} doesn't exist".format(full_name)
 
     def load_people(self, file_name):
-        # add people from txt
-        text_file = open(file_name)
-        for line in text_file:
-            # strip input from file of spaces and new line
-            reg = (line.rstrip('\n')).split(" ")
-            # check if inputs format is correct
-            if len(reg) == 4 and reg[2] in (
-             "FELLOW", "STAFF") and reg[3] in ("Y", "N"):
+        if os.path.isfile(file_name) is True:
+            # add people from txt
+            text_file = open(file_name)
+            for line in text_file:
+                # strip input from file of spaces and new line
+                reg = (line.rstrip('\n')).split(" ")
+                # check if inputs format is correct
+                if len(reg) == 4 and reg[2] in (
+                 "FELLOW", "STAFF") and reg[3] in ("Y", "N"):
 
-                # adding people if line has 4 values
-                self.add_person(reg[0], reg[1], reg[2], reg[3])
-            elif len(reg) == 3 and reg[2] in ("FELLOW", "STAFF"):
+                    # adding people if line has 4 values
+                    self.add_person(reg[0], reg[1], reg[2], reg[3])
+                elif len(reg) == 3 and reg[2] in ("FELLOW", "STAFF"):
 
-                # adding people if line has 3 values
-                self.add_person(reg[0], reg[1], reg[2])
-            else:
-                # if data doesn't match format
-                return("Incorrect data format")
+                    # adding people if line has 3 values
+                    self.add_person(reg[0], reg[1], reg[2])
+                else:
+                    # if data doesn't match format
+                    return colored("Incorrect data format", "red")
+        else:
+            return colored("File - {0} doesn't exist".format(file_name), "red")
 
     def print_people(self):
-        print("\nTotal number of people: " + str(len(self.all_people)))
-        print("No. of staff is: " + str(len(self.all_staff)))
-        print("No. of fellow is: " + str(len(self.all_fellow)))
+        total_people = "Total number of people: {0} \n".format(len(self.all_people))
+        staff = "No. of staff is: {0}\n".format(len(self.all_staff))
+        fellows = "No. of fellow is: {0}\n".format(len(self.all_fellow))
+
+        print(total_people + staff + fellows)
+        print("Staff")
         for name in self.all_staff:
-            print("\nStaff")
-            print(name + " - Staff")
+            print("{0} - Staff".format(name))
+
+        print("\nFellows")
         for name in self.all_fellow:
-            print("\nFellows")
-            print(name + " - Fellow")
+            print("{0} - Fellow".format(name))
 
     def print_unallocated(self, file_name=None):
         office_waiting = len(self.office_waiting_list)
@@ -254,10 +268,9 @@ class Amity(object):
 
         empl_msg = "\nEmployees waiting for office: %s \n" % office_waiting
         print(empl_msg)
-        # return empl_msg
+
         for employee in self.office_waiting_list:
             print(employee)
-            # return employee
 
         fell_msg = "\nFellow waiting living space: %s\n" % living_space_waiting
         print(fell_msg)
