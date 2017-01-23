@@ -9,10 +9,10 @@ class Rooms(object):
 
 
 class Living(Rooms):
-    def __init__(self, room_name, room_type):
-        super().__init__(room_name, room_type="LIVING", max_occupants=4)
+    def __init__(self, room_name, room_type, max_occupants=4):
+        super().__init__(room_name, room_type="LIVING")
 
 
 class Office(Rooms):
-    def __init__(self, room_name, room_type):
-        super().__init__(room_name, room_type="OFFICE", max_occupants=6)
+    def __init__(self, room_name, room_type, max_occupants=6):
+        super().__init__(room_name, room_type="OFFICE")
