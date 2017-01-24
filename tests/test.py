@@ -2,6 +2,7 @@
 """test/tests"""
 import os
 import unittest
+import unittest.mock as mock
 from amity.app import amity
 
 
@@ -175,13 +176,11 @@ class TestCase(unittest.TestCase):
         # check if fellow in file were added
         self.assertEqual(len(self.amity.all_fellow), 1)
 
-    def test_print_unallocated(self):
+    @mock.patch('app.amity.open')
+    def test_print_unallocated(self, mock_open):
         # test for file creation for output
         self.amity.print_unallocated("output")
-        # check if file exists - has been created
-        self.assertTrue(os.path.isfile("output.txt"))
-        # delete created file
-        os.path.remove('output')
+        mock_open.assert_called_with("output.txt")
 
     def test_print_room(self):
         self.amity.print_room("JAVA")
@@ -189,15 +188,16 @@ class TestCase(unittest.TestCase):
         self.assertDictContainsSubset(
             self.amity.room_allocations["living"], {"JAVA": []})
 
+    @mock.patch('app.amity.open')
     def test_save_state(self):
         self.amity.save_state("backup")
         # check if database has been created
-        self.assertTrue(os.path.isfile('backup.db'))
+        mock_open.assert_called_with("backup.sqlite")
 
     def test_load_state(self):
-        self.amity.load_state("data.db")
+        self.amity.load_state("data")
         # check if database exists
-        self.assertTrue(os.path.isfile("data.db"))
+        self.assertTrue(os.path.isfile("data.sqlite"))
 
 
 # if __name__ == '__main__':

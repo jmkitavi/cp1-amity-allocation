@@ -23,7 +23,7 @@ class Amity(object):
             "office": {},
             "living": {}}
 
-    def create_room(self, room_name, room_type):
+    def create_room(self, room_type, room_name):
         room_type = room_type.upper()
         room_name = room_name.upper()
         # check if room name exists
@@ -265,6 +265,7 @@ class Amity(object):
     def print_unallocated(self, file_name=None):
         office_waiting = len(self.office_waiting_list)
         living_space_waiting = len(self.living_space_waiting_list)
+        return "Office - {0}. Living - {1}".format(office_waiting, living_space_waiting)
 
         empl_msg = "\nEmployees waiting for office: %s \n" % office_waiting
         print(empl_msg)
@@ -274,16 +275,13 @@ class Amity(object):
 
         fell_msg = "\nFellow waiting living space: %s\n" % living_space_waiting
         print(fell_msg)
-        # return fell_msg
+
         for fellow in self.living_space_waiting_list:
             print(fellow)
-            # return fellow
 
         if file_name is not None:
-            # temp = file_name.split(".")
-            # if len(temp) == 1:
             print("\n Printing out to file - ", file_name)
-            # return("\n Printing out to file - ", file_name)
+
             with open(file_name, 'a') as f:
 
                 # write out all employees without office
@@ -319,7 +317,7 @@ class Amity(object):
             if len(self.room_allocations[room_type][room_name]) == 0:
                 occupants = "No occupants"
             msg = (h_line + "\n" + room_details + "\n" + h_line + "\n" + occupants + "\n\n")
-        return(msg)
+        return msg
 
     def print_room(self, room_name):
         print(self.print_data(room_name))
@@ -439,6 +437,8 @@ class Amity(object):
                                       unallocated=unallocated_living)
             db.session.add(unallocated)
             db.session.commit()
+
+        print("Data saved to {0}".format(db))
 
     def load_state(self, database="default"):
         print("initializing database")

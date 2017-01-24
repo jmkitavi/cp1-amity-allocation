@@ -40,7 +40,7 @@ def docopt_cmd(func):
             # The DocoptExit is thrown when the args do not match.
             # We print a message to the user and the usage block.
 
-            print('Invalid Command!')
+            print(colored("Invalid Command!", "red"))
             print(e)
             return
 
@@ -76,11 +76,11 @@ class AmityApplication(cmd.Cmd):
     def do_create_room(self, arg):
         """
         Creates a room(s) in amity
-        Usage: create_room <room_name> <room_type> ...
+        Usage: create_room <room_type> <room_name>  ...
         """
-        room_name = arg["<room_name>"]
         room_type = arg["<room_type>"]
-        print(self.amity.create_room(room_name, room_type))
+        for name in arg['<room_name>']:
+            print(self.amity.create_room(room_type, name))
         print("\n")
 
     @docopt_cmd
