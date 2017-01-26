@@ -12,7 +12,7 @@ from amity.app.db.database import Base, Employees, Allocations, Rooms, DatabaseC
 
 class Amity(object):
     def __init__(self):
-        self.all_people = [""]
+        self.all_people = []
         self.all_fellow = []
         self.all_staff = []
         self.office_waiting_list = []  # all staff without office
@@ -121,7 +121,7 @@ class Amity(object):
 
     def if_was_assigned(self, full_name, room_type):
         for room_x in self.room_allocations[room_type].keys():
-            if full_name in self.room_allocations[room_type][room_x]:
+            if full_name.upper() in self.room_allocations[room_type][room_x]:
                 return(room_x)
 
     def allocate(self, first_name, last_name, room_name):
@@ -129,7 +129,7 @@ class Amity(object):
         room_name = room_name.upper()
 
         if full_name not in self.all_people:
-            msg = "{0} - name doesn't exist"
+            msg = "{0} - name doesn't exist".format(full_name)
 
         elif room_name not in self.all_rooms:
             msg = "Incorrect room name - {0}".format(room_name)
@@ -179,7 +179,8 @@ class Amity(object):
                     return "No room assigned, can't be re-assigned"
 
                 # check if reallocation is to current living space
-                elif previous_room is room_name:
+
+                elif previous_room == room_name:
                     return "Can't reallocate to same room"
                 else:
                     # checking availability of new living space and reallocate
@@ -271,7 +272,6 @@ class Amity(object):
     def print_unallocated(self, file_name=None):
         office_waiting = len(self.office_waiting_list)
         living_space_waiting = len(self.living_space_waiting_list)
-        # return "Office - {0}. Living - {1}".format(office_waiting, living_space_waiting)
 
         empl_msg = "\nEmployees waiting for office: %s \n" % office_waiting
         print(empl_msg)
@@ -301,6 +301,7 @@ class Amity(object):
                 f.write(fell_msg)
                 for fellow in self.living_space_waiting_list:
                     f.write((fellow) + "\n")
+        return "Office - {0}. Living - {1}".format(office_waiting, living_space_waiting)
 
     def print_data(self, room_name):
         room_name = room_name.upper()
@@ -330,7 +331,7 @@ class Amity(object):
 
     def print_allocations(self, file_name=None):
         if len(self.all_rooms) < 1:
-            print("No rooms available")
+            return ("No rooms available")
         for room in self.all_rooms:
             allocations = self.print_data(room)
             print(allocations)
@@ -500,4 +501,4 @@ class Amity(object):
 
             print("Loading from {0} completed successfully".format(database))
         else:
-            print("Databse {0}.sqlite not found".format(database))
+            return ("Database {0}.sqlite not found".format(database))
