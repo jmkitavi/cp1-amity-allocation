@@ -6,7 +6,8 @@ import sqlite3
 from random import choice
 from termcolor import colored
 from sqlalchemy import select
-from app.db.database import Base, Employees, Allocations, Rooms, DatabaseCreator, Unallocated
+from amity.app.db.database import Base, Employees, Allocations, Rooms, DatabaseCreator, Unallocated
+# from app.db.database import Base, Employees, Allocations, Rooms, DatabaseCreator, Unallocated
 
 
 class Amity(object):
@@ -45,7 +46,7 @@ class Amity(object):
                     msg = "{0} - living space added successfully".format(room_name)
 
             else:
-                msg = (colored("{0} is a wrong room type".format(room_type), "red") + "\n\tOffice or Living")
+                msg = (colored("{0} is a wrong room type - Office or Living".format(room_type), "red"))
         return msg
 
     def add_person(self, first_name, last_name, role, accomodation="N"):
@@ -54,7 +55,7 @@ class Amity(object):
         accomodation = accomodation.upper()
 
         if full_name in self.all_people:
-            return colored("Sorry! Name {0} already used ".format(full_name), "red")
+            return colored("Sorry! Name {0} already used".format(full_name), "red")
         else:
             if role in ("FELLOW", "STAFF"):
                 living_msg = ""
@@ -94,9 +95,9 @@ class Amity(object):
 
                     if accomodation == "Y":
                         living_msg = colored("Sorry! staff don't get accomodation", "red")
-                return add_msg + office_msg + living_msg
+                return (add_msg + office_msg + living_msg)
             else:
-                return "Error! Please indicate correct role.\n\t Fellow or Staff"
+                return colored("Error! Please indicate correct role.\n\t Fellow or Staff", "red")
 
     def select_random_office(self):
         available = []
@@ -133,7 +134,10 @@ class Amity(object):
         elif room_name not in self.all_rooms:
             msg = "Incorrect room name - {0}".format(room_name)
 
-        elif full_name not in self.living_space_waiting_list and self.office_waiting_list:
+        elif room_name in self.all_offices and full_name not in self.office_waiting_list:
+            msg = "{0} - Not in waiting list".format(full_name)
+
+        elif room_name in self.all_living and full_name not in self.living_space_waiting_list:
             msg = "{0} - Not in waiting list".format(full_name)
 
         elif full_name in self.all_staff and room_name in self.all_living:
@@ -238,15 +242,17 @@ class Amity(object):
 
                     # adding people if line has 4 values
                     self.add_person(reg[0], reg[1], reg[2], reg[3])
+                    print("Adding {0} {1} {2}".format(reg[0], reg[1], reg[2]))
                 elif len(reg) == 3 and reg[2] in ("FELLOW", "STAFF"):
 
                     # adding people if line has 3 values
                     self.add_person(reg[0], reg[1], reg[2])
+                    print("Adding {0} {1} {2}".format(reg[0], reg[1], reg[2]))
                 else:
                     # if data doesn't match format
-                    return colored("Incorrect data format", "red")
+                    print(colored("Incorrect data format \n{0}".format(line), "red"))
         else:
-            return colored("File - {0} doesn't exist".format(file_name), "red")
+            print(colored("File - {0} doesn't exist".format(file_name), "red"))
 
     def print_people(self):
         total_people = "Total number of people: {0} \n".format(len(self.all_people))
@@ -265,7 +271,7 @@ class Amity(object):
     def print_unallocated(self, file_name=None):
         office_waiting = len(self.office_waiting_list)
         living_space_waiting = len(self.living_space_waiting_list)
-        return "Office - {0}. Living - {1}".format(office_waiting, living_space_waiting)
+        # return "Office - {0}. Living - {1}".format(office_waiting, living_space_waiting)
 
         empl_msg = "\nEmployees waiting for office: %s \n" % office_waiting
         print(empl_msg)
@@ -441,54 +447,57 @@ class Amity(object):
         print("Data saved to {0}".format(db))
 
     def load_state(self, database="default"):
-        print("initializing database")
-        db = DatabaseCreator(database)
-        Base.metadata.bind = db.engine
-        db_session = db.session
+        if os.path.isfile(database + ".sqlite") is True:
+            print("initializing database")
+            db = DatabaseCreator(database)
+            Base.metadata.bind = db.engine
+            db_session = db.session
 
-        print("Loading data...")
-        print("Loading Employees")
-        people_in_db = select([Employees])
-        result = db_session.execute(people_in_db)
-        for person in result.fetchall():
-            self.all_people.append(person.emp_name)
-            if person.emp_role.upper() == "FELLOW":
-                self.all_fellow.append(person.emp_name)
-            elif person.emp_role.upper() == "STAFF":
-                self.all_staff.append(person.emp_name)
+            print("Loading data...")
+            print("Loading Employees")
+            people_in_db = select([Employees])
+            result = db_session.execute(people_in_db)
+            for person in result.fetchall():
+                self.all_people.append(person.emp_name)
+                if person.emp_role.upper() == "FELLOW":
+                    self.all_fellow.append(person.emp_name)
+                elif person.emp_role.upper() == "STAFF":
+                    self.all_staff.append(person.emp_name)
 
-        print("Loading Rooms")
-        rooms_in_db = select([Rooms])
-        result = db_session.execute(rooms_in_db)
-        for room in result.fetchall():
-            self.all_rooms.append(room.room_name)
-            if room.room_type.upper() == "OFFICE":
-                self.all_offices.append(room.room_name)
-                self.room_allocations["office"][room.room_name] = []
-            elif room.room_type.upper() == "LIVING":
-                self.all_living.append(room.room_name)
-                self.room_allocations["living"][room.room_name] = []
+            print("Loading Rooms")
+            rooms_in_db = select([Rooms])
+            result = db_session.execute(rooms_in_db)
+            for room in result.fetchall():
+                self.all_rooms.append(room.room_name)
+                if room.room_type.upper() == "OFFICE":
+                    self.all_offices.append(room.room_name)
+                    self.room_allocations["office"][room.room_name] = []
+                elif room.room_type.upper() == "LIVING":
+                    self.all_living.append(room.room_name)
+                    self.room_allocations["living"][room.room_name] = []
 
-        print("Loading Allocations")
-        allocations_in_db = select([Allocations])
-        result = db_session.execute(allocations_in_db)
-        for allocations in result.fetchall():
-            occupants = [x.strip() for x in allocations.occupants.split(',')]
-            for x in occupants:
-                self.room_allocations[allocations.room_type][allocations.room_name].append(x)
+            print("Loading Allocations")
+            allocations_in_db = select([Allocations])
+            result = db_session.execute(allocations_in_db)
+            for allocations in result.fetchall():
+                occupants = [x.strip() for x in allocations.occupants.split(',')]
+                for x in occupants:
+                    self.room_allocations[allocations.room_type][allocations.room_name].append(x)
 
-        unallocated_in_db = select([Unallocated])
-        result = db_session.execute(unallocated_in_db)
-        for unallocated in result.fetchall():
-            if unallocated[0].upper() == "OFFICE":
-                pple = [x.strip() for x in unallocated[1].split(',')]
-                for x in pple:
-                    if x not in self.office_waiting_list:
-                        self.office_waiting_list.append(x)
-            if unallocated[0].upper() == "LIVING":
-                pple = [x.strip() for x in unallocated[1].split(',')]
-                for x in pple:
-                    if x not in self.living_space_waiting_list:
-                        self.living_space_waiting_list.append(x)
+            unallocated_in_db = select([Unallocated])
+            result = db_session.execute(unallocated_in_db)
+            for unallocated in result.fetchall():
+                if unallocated[0].upper() == "OFFICE":
+                    pple = [x.strip() for x in unallocated[1].split(',')]
+                    for x in pple:
+                        if x not in self.office_waiting_list:
+                            self.office_waiting_list.append(x)
+                if unallocated[0].upper() == "LIVING":
+                    pple = [x.strip() for x in unallocated[1].split(',')]
+                    for x in pple:
+                        if x not in self.living_space_waiting_list:
+                            self.living_space_waiting_list.append(x)
 
-        print("Loading from " + database + " completed successfully")
+            print("Loading from {0} completed successfully".format(database))
+        else:
+            print("Databse {0}.sqlite not found".format(database))

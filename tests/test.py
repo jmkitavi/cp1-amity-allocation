@@ -4,6 +4,7 @@ import os
 import unittest
 import unittest.mock as mock
 from amity.app import amity
+from termcolor import colored
 
 
 class TestCase(unittest.TestCase):
@@ -11,13 +12,13 @@ class TestCase(unittest.TestCase):
 
         self.amity = amity.Amity()
 
-    def test_create_office(self):
+    def test_create_one_office(self):
         rooms_count_before = len(self.amity.all_rooms)
         offices_count_before = len(self.amity.all_offices)
 
         # test message after adding Office
         self.assertEqual(self.amity.create_room(
-            "Oculus", "Office"), "Office Added")
+            "office", "Oculus"), "OCULUS - office added successfully")
 
         offices_count_after = len(self.amity.all_offices)
         rooms_count_after = len(self.amity.all_rooms)
@@ -40,29 +41,29 @@ class TestCase(unittest.TestCase):
 
         # test return message after adding living space
         self.assertEqual(self.amity.create_room(
-            "Golang", "living"), "Living space Added")
+            "living", "go"), "GO - living space added successfully")
 
         rooms_count_after = len(self.amity.all_rooms)
         living_count_after = len(self.amity.all_living)
 
         # check if living and office count increased by 1
         self.assertEqual(rooms_count_before + 1, rooms_count_after)
-        self.assertEqual(offices_count_before + 1, offices_count_after)
+        self.assertEqual(living_count_before + 1, living_count_after)
 
         # check that room has been added
-        self.assertTrue("GOLANG" in self.amity.all_rooms)
-        self.assertTrue("GOLANG" in self.amity.all_living)
+        self.assertTrue("GO" in self.amity.all_rooms)
+        self.assertTrue("GO" in self.amity.all_living)
 
         # test if rooms is added to dict with list
         self.assertDictContainsSubset(
-            self.amity.room_allocations["living"], {"GOLANG": []})
+            self.amity.room_allocations["living"], {"GO": []})
 
     def test_create_wrong_room_type(self):
         rooms_count_before = len(self.amity.all_rooms)
 
         # test for wrong room_type
         self.assertEqual(self.amity.create_room(
-            "Yellow", "Home"), "Wrong Room Type")
+            "home", "YELLOW"), (colored("HOME is a wrong room type - Office or Living", "red")))
         rooms_count_after = len(self.amity.all_rooms)
 
         # check if rooms before is equal to current number of rooms
@@ -72,27 +73,29 @@ class TestCase(unittest.TestCase):
         self.assertFalse('YELLOW' in self.amity.all_rooms)
 
     def test_create_room_that_exists(self):
-        rooms_count_before = len(self.amity.all_rooms)
+        self.amity.create_room("living", "go")
 
+        rooms_count_before = len(self.amity.all_rooms)
         # test message after re adding room
         self.assertEqual(self.amity.create_room(
-            "Golang", "living"), "GOLANG room name already used")
+            "living", "GO"), colored("Sorry! GO - room name already used", "red"))
 
         rooms_count_after = len(self.amity.all_rooms)
         # check if rooms before is equal to current number of rooms
         self.assertEqual(rooms_count_before, rooms_count_after)
 
         # check that room is actually there
-        self.assertTrue('GOLANG' in self.amity.all_rooms)
+        self.assertTrue('GO' in self.amity.all_rooms)
 
     def test_add_staff(self):
         people_count_before = len(self.amity.all_people)
         staff_count_before = len(self.amity.all_staff)
 
+        self.amity.add_person("Per", "Njira", "Staff")
         # return message for successfully adding staff
-        self.assertEqual(
-            self.amity.add_person("Per", "Njira", "Staff"),
-            "PER NJIRA - staff added successfully")
+        # self.assertEqual(
+        #     self.amity.add_person("Per", "Njira", "Staff"),
+        #     "PER NJIRA - staff, added successfully\n")
 
         people_count_after = len(self.amity.all_people)
         staff_count_after = len(self.amity.all_staff)
@@ -105,10 +108,11 @@ class TestCase(unittest.TestCase):
         people_count_before = len(self.amity.all_people)
         fellow_count_before = len(self.amity.all_fellow)
 
+        self.amity.add_person("Joe", "Musau", "Fellow", "Y")
         # return message for successfully adding fellow
-        self.assertEqual(
-            self.amity.add_person("Joe", "Musau", "Fellow", "Y"),
-            "JOE MUSAU - fellow added successfully")
+        # self.assertEqual(
+        #     self.amity.add_person("Joe", "Musau", "Fellow", "Y"),
+        #     "JOE MUSAU - fellow added successfully")
 
         people_count_after = len(self.amity.all_people)
         fellow_count_after = len(self.amity.all_fellow)
@@ -118,11 +122,12 @@ class TestCase(unittest.TestCase):
         self.assertEqual(fellow_count_before + 1, fellow_count_after)
 
     def test_add_person_existing(self):
+        self.amity.add_person("Joe", "Musau", "Fellow", "Y")
         people_count_before = len(self.amity.all_people)
 
         # test adding a name already used
         self.assertEqual(self.amity.add_person(
-            "Joe", "Musau", "Fellow", "Y"), "JOE MUSAU already used")
+            "Joe", "Musau", "Fellow", "Y"), colored("Sorry! Name JOE MUSAU already used", "red"))
 
         people_count_after = len(self.amity.all_people)
 
@@ -134,7 +139,7 @@ class TestCase(unittest.TestCase):
 
         # test wrong role input
         self.assertEqual(self.amity.add_person(
-            "James", "Muli", "Trainer", "Y"), "Please indicate correct role")
+            "James", "Muli", "Trainer", "Y"), colored("Error! Please indicate correct role.\n\t Fellow or Staff", "red"))
 
         people_count_after = len(self.amity.all_people)
 
@@ -142,15 +147,14 @@ class TestCase(unittest.TestCase):
         self.assertEqual(people_count_before, people_count_after)
 
     def test_reallocate_person(self):
+        # person created and  allocated random room e.g JAVA
+        self.amity.create_room("living", "java")
+        self.amity.add_person("Jose", "Kit", "Fellow", "Y")
         first_room_occupants = len(self.amity.room_allocations[
             "living"]["JAVA"])
 
-        # person created and  allocated random room e.g JAVA
-        self.amity.add_person("Jose", "Kit", "Fellow", "Y")
-
         # create new room for reallocation
-        self.amity.create_room("PHP", "LIVING")
-
+        self.amity.create_room("living", "php")
         second_room_occupants = len(self.amity.room_allocations["living"]["PHP"])
 
         # re allocation
@@ -162,6 +166,50 @@ class TestCase(unittest.TestCase):
         self.assertEqual(first_room_occupants - 1, first_room_new_occupants)
         # check if new room occupants increased
         self.assertEqual(second_room_occupants + 1, second_room_new_occupants)
+
+    def test_select_random_office(self):
+        # select random with no office
+        self.assertEqual(self.amity.select_random_office(), False)
+        # create one office
+        self.amity.create_room("office", "Oculus")
+        # select random with one office created
+        self.assertEqual(self.amity.select_random_office(), "OCULUS")
+
+    def test_select_random_living(self):
+        # select random with no living
+        self.assertEqual(self.amity.select_random_living(), False)
+        # create one living
+        self.amity.create_room("living", "java")
+        # select random with one living created
+        self.assertEqual(self.amity.select_random_living(), "JAVA")
+
+    def test_if_was_assigned(self):
+        # create office
+        self.amity.create_room("office", "java")
+        # add new person, assigned randomly to java
+        self.amity.add_person("Joe", "Kit", "Fellow")
+        # check if assigned
+        self.assertEqual(self.amity.if_was_assigned("JOE KIT", "office"), "JAVA")
+
+    def test_allocate(self):
+        # create person, unallocated
+        self.amity.add_person("Joe", "Kit", "Fellow")
+        unallocated_before = len(self.amity.office_waiting_list)
+        # create office to allocate person to
+        self.amity.create_room("office", "oculus")
+        occupants_before = len(self.amity.room_allocations["office"]["OCULUS"])
+        # allocate to office
+        self.assertEqual(self.amity.allocate("Joe", "Kit", "oculus"), "JOE KIT successfully assigned office - OCULUS")
+
+        unallocated_after = len(self.amity.office_waiting_list)
+        occupants_after = len(self.amity.room_allocations["office"]["OCULUS"])
+
+        # unallocated reduces
+        self.assertEqual(unallocated_before - 1, unallocated_after)
+        # occupants increase
+        self.assertEqual(occupants_before + 1, occupants_after)
+
+
 
     def test_load_people(self):
         dirname = os.path.dirname(os.path.abspath(__file__))
@@ -198,7 +246,9 @@ class TestCase(unittest.TestCase):
         self.amity.load_state("data")
         # check if database exists
         self.assertTrue(os.path.isfile("data.sqlite"))
-
-
-# if __name__ == '__main__':
-#     unittest.main()
+    # def tearDown(self):
+    #     pass
+#
+#
+# # if __name__ == '__main__':
+# #     unittest.main()

@@ -15,7 +15,7 @@ Usage:
 Options:
     -h, --help  Show this screen and exit
     -i --interactive  Interactive Mode
-    --wants_accomodation=<N> [defult: N]
+    wants_accomodation --a=<N> [defult: N]
 """
 
 import sys
@@ -124,7 +124,7 @@ class AmityApplication(cmd.Cmd):
     def do_load_people(self, arg):
         """Usage: load_people <file_name>"""
         file_name = arg["<file_name>"]
-        print(self.amity.load_people(file_name))
+        self.amity.load_people(file_name)
         print("\n")
 
     @docopt_cmd
