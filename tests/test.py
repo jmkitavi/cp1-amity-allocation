@@ -146,7 +146,7 @@ class TestCase(unittest.TestCase):
         # check if previous count is same as current
         self.assertEqual(people_count_before, people_count_after)
 
-    def test_reallocate_person(self):
+    def test_reallocate_person_living(self):
         # person created and  allocated random room e.g JAVA
         self.amity.create_room("living", "java")
         self.amity.add_person("Jose", "Kit", "Fellow", "Y")
@@ -166,6 +166,32 @@ class TestCase(unittest.TestCase):
         self.assertEqual(first_room_occupants - 1, first_room_new_occupants)
         # check if new room occupants increased
         self.assertEqual(second_room_occupants + 1, second_room_new_occupants)
+
+    def test_reallocate_person_office(self):
+        # person created and  allocated random room e.g JAVA
+        self.amity.create_room("office", "ocu")
+        self.amity.add_person("Jose", "Kit", "fellow")
+        first_room_occupants = len(self.amity.room_allocations[
+            "office"]["OCU"])
+
+        # create new room for reallocation
+        self.amity.create_room("office", "hog")
+        second_room_occupants = len(self.amity.room_allocations["office"]["HOG"])
+
+        # re allocation
+        self.amity.reallocate_person("JOSE", "KIT", "HOG")
+        first_room_new_occupants = len(self.amity.room_allocations["office"]["OCU"])
+        second_room_new_occupants = len(self.amity.room_allocations["office"]["HOG"])
+
+        # check if old room occupants reduce
+        self.assertEqual(first_room_occupants - 1, first_room_new_occupants)
+        # check if new room occupants increased
+        self.assertEqual(second_room_occupants + 1, second_room_new_occupants)
+
+    # def test_reallocate_same_room(self):
+    #     self.amity.create_room("office", "Shire")
+    #     self.amity.add_person("Ken", "Mun", "staff")
+    #     self.assertEqual(self.amity.reallocate_person("Ken", "Mun", "Shire"), "Can't reallocate to same room")
 
     def test_select_random_office(self):
         # select random with no office
@@ -209,46 +235,59 @@ class TestCase(unittest.TestCase):
         # occupants increase
         self.assertEqual(occupants_before + 1, occupants_after)
 
+    def test_allocate_non_person(self):
+        self.assertEqual(self.amity.allocate("Je", "Me", "go"), "JE ME - name doesn't exist")
 
+    def test_allocate_no_room(self):
+        self.amity.add_person("Je", "Me", "Fellow")
+        self.assertEqual(self.amity.allocate("Je", "Me", "go"), "Incorrect room name - GO")
 
     def test_load_people(self):
         dirname = os.path.dirname(os.path.abspath(__file__))
         # load data
-        self.amity.load_people(os.path.join(dirname, "load.txt"))
+        self.amity.load_people("load.txt")
         # check if file exists
         self.assertTrue(os.path.isfile("load.txt"))
         # check if all people were added
-        self.assertEqual(len(self.amity.all_people), 2)
+        self.assertEqual(len(self.amity.all_people), 6)
         # check if staff has been added
-        self.assertEqual(len(self.amity.all_staff), 1)
+        self.assertEqual(len(self.amity.all_staff), 2)
         # check if fellow in file were added
-        self.assertEqual(len(self.amity.all_fellow), 1)
+        self.assertEqual(len(self.amity.all_fellow), 4)
 
-    @mock.patch('app.amity.open')
-    def test_print_unallocated(self, mock_open):
+    def test_print_unallocated(self):
         # test for file creation for output
-        self.amity.print_unallocated("output")
-        mock_open.assert_called_with("output.txt")
+        self.amity.print_unallocated("new")
+        self.assertTrue(os.path.isfile("new"))
 
-    def test_print_room(self):
-        self.amity.print_room("JAVA")
-        # check if the room is actually there
-        self.assertDictContainsSubset(
-            self.amity.room_allocations["living"], {"JAVA": []})
+    def test_print_data(self):
+        self.assertEqual(self.amity.print_data("java"), "Sorry! Room is none existent")
+        self.amity.create_room("office", "hog")
+        # self.assertEqual(self.amity.print_data("hog"), "Sorry! Room is none existent")
 
-    @mock.patch('app.amity.open')
+    def test_print_allocation(self):
+        self.assertEqual(self.amity.print_allocations(), "No rooms available")
+
+    def test_print_allocation_file(self):
+        self.amity.create_room("office", "hog")
+        self.amity.print_allocations("out")
+        self.assertTrue(os.path.isfile("out"))
+
+
+
     def test_save_state(self):
-        self.amity.save_state("backup")
-        # check if database has been created
-        mock_open.assert_called_with("backup.sqlite")
+        self.amity.add_person("Joe", "Kit", "fellow")
+        self.amity.save_state("test")
+        self.assertTrue(os.path.isfile("test.sqlite"))
 
     def test_load_state(self):
-        self.amity.load_state("data")
-        # check if database exists
-        self.assertTrue(os.path.isfile("data.sqlite"))
-    # def tearDown(self):
-    #     pass
-#
-#
-# # if __name__ == '__main__':
-# #     unittest.main()
+        people_count_before = len(self.amity.all_people)
+        self.amity.load_state("test")
+        people_count_after = len(self.amity.all_people)
+        self.assertEqual(people_count_before + 1, people_count_after)
+
+    def tearDown(self):
+        pass
+
+if __name__ == '__main__':
+    unittest.main()
