@@ -6,11 +6,13 @@ import sqlite3
 from random import choice
 from termcolor import colored
 from sqlalchemy import select
-from amity.app.db.database import Base, Employees, Allocations, Rooms, DatabaseCreator, Unallocated
-# from app.db.database import Base, Employees, Allocations, Rooms, DatabaseCreator, Unallocated
+from app.db.database import Base, Employees, Allocations, Rooms, DatabaseCreator, Unallocated
 
 
 class Amity(object):
+    """
+    Class Amity for room Allocations
+    """
     def __init__(self):
         self.all_people = []
         self.all_fellow = []
@@ -100,6 +102,7 @@ class Amity(object):
                 return colored("Error! Please indicate correct role.\n\t Fellow or Staff", "red")
 
     def select_random_office(self):
+        # selects random office for random allocation
         available = []
         for office in self.all_offices:
             if len(self.room_allocations["office"][office]) < 6:
@@ -110,6 +113,7 @@ class Amity(object):
         return office
 
     def select_random_living(self):
+        # selects random living for random allocation
         available = []
         for living in self.all_living:
             if len(self.room_allocations["living"][living]) < 4:
@@ -120,20 +124,26 @@ class Amity(object):
         return living
 
     def if_was_assigned(self, full_name, room_type):
+        # checks if someone was assigned a room before
         for room_x in self.room_allocations[room_type].keys():
             if full_name.upper() in self.room_allocations[room_type][room_x]:
                 return(room_x)
 
     def allocate(self, first_name, last_name, room_name):
+        # allocates someone from unassigned
         full_name = (first_name + " " + last_name).upper()
         room_name = room_name.upper()
 
+        # check if name exists
         if full_name not in self.all_people:
             msg = "{0} - name doesn't exist".format(full_name)
 
+        # check if room exists
         elif room_name not in self.all_rooms:
             msg = "Incorrect room name - {0}".format(room_name)
 
+        # check if in waiting list
+        # and assign if office or living
         elif room_name in self.all_offices and full_name not in self.office_waiting_list:
             msg = "{0} - Not in waiting list".format(full_name)
 
@@ -445,7 +455,7 @@ class Amity(object):
             db.session.add(unallocated)
             db.session.commit()
 
-        print("Data saved to {0}".format(db))
+        print("Data saved to {0}".format(database))
 
     def load_state(self, database="default"):
         if os.path.isfile(database + ".sqlite") is True:

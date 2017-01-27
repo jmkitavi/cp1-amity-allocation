@@ -170,7 +170,7 @@ class AmityApplication(cmd.Cmd):
         Usage: load_state <database>
         """
         database = arg["<database>"]
-        print(self.amity.load_state(database))
+        self.amity.load_state(database)
         print("\n")
 
     @docopt_cmd
@@ -180,7 +180,7 @@ class AmityApplication(cmd.Cmd):
         Usage: save_state <database>
         """
         database = arg["<database>"]
-        print(self.amity.save_state(database))
+        self.amity.save_state(database)
         print("\n")
 
     @docopt_cmd
