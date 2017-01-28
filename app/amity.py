@@ -1,8 +1,6 @@
 """app/amity"""
-import sys
 import os
 import time
-import sqlite3
 from random import choice
 from termcolor import colored
 from sqlalchemy import select
@@ -341,7 +339,7 @@ class Amity(object):
 
     def print_allocations(self, file_name=None):
         if len(self.all_rooms) < 1:
-            return ("No rooms available")
+            return "No rooms available"
         for room in self.all_rooms:
             allocations = self.print_data(room)
             print(allocations)
@@ -511,4 +509,4 @@ class Amity(object):
 
             print("Loading from {0} completed successfully".format(database))
         else:
-            return ("Database {0}.sqlite not found".format(database))
+            return "Database {0}.sqlite not found".format(database)
