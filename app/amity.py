@@ -183,27 +183,30 @@ class Amity(object):
                 previous_room = self.if_was_assigned(full_name, "living")
 
                 # check if person had living space before reallocation
-                if previous_room is None:
-                    return "No room assigned, can't be re-assigned"
+                if full_name not in self.all_staff:
+                    if previous_room is None:
+                        return "No room assigned, can't be re-assigned"
 
-                # check if reallocation is to current living space
+                    # check if reallocation is to current living space
 
-                elif previous_room == room_name:
-                    return "Can't reallocate to same room"
-                else:
-                    # checking availability of new living space and reallocate
-                    if len(self.room_allocations["living"][room_name]) < 4:
-                        # remove person from old living space
-                        self.room_allocations["living"][previous_room].remove(
-                            full_name)
-                        # add person to new living space
-                        self.room_allocations["living"][room_name].append(
-                            full_name)
-
-                        return "Reallocated {0} from {1} to {2}".format(full_name, previous_room, room_name)
-                    # if living space is full
+                    elif previous_room == room_name:
+                        return "Can't reallocate to same room"
                     else:
-                        return "Reallocation failed! {0} living space full".format(room_name)
+                        # checking availability of new living space and reallocate
+                        if len(self.room_allocations["living"][room_name]) < 4:
+                            # remove person from old living space
+                            self.room_allocations["living"][previous_room].remove(
+                                full_name)
+                            # add person to new living space
+                            self.room_allocations["living"][room_name].append(
+                                full_name)
+
+                            return "Reallocated {0} from {1} to {2}".format(full_name, previous_room, room_name)
+                        # if living space is full
+                        else:
+                            return "Reallocation failed! {0} living space full".format(room_name)
+                else:
+                    return "Error! Can't assign staff a living space"
 
             # check if room exists and is an office
             elif room_name in self.all_rooms and room_name in self.all_offices:
