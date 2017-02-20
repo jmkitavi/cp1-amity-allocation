@@ -1,0 +1,11 @@
+[run]
+omit = 
+    */migrations/*
+    */site-packages/*
+    settings.py
+    local_settings.py
+    *sqlalchemy*
+    *numbers*
+    *decimal*
+    *unittest*
+    *sqlite*
