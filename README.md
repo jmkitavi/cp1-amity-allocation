@@ -1,4 +1,5 @@
 [![Issue Count](https://lima.codeclimate.com/github/sirjmkitavi/cp1-amity-allocation/badges/issue_count.svg)](https://lima.codeclimate.com/github/sirjmkitavi/cp1-amity-allocation)
+[![Code Climate](https://lima.codeclimate.com/github/sirjmkitavi/cp1-amity-allocation/badges/gpa.svg)](https://lima.codeclimate.com/github/sirjmkitavi/cp1-amity-allocation)
 # Checkpoint 1 - Amity Space Allocation
 ## Introduction
 The Amity room allocation is a system that allocates rooms to the Staff and fellows working at Andela. Developed in #python.
