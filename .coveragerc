@@ -1,0 +1,9 @@
+[run]
+omit = 
+    settings.py
+    local_settings.py
+    *sqlalchemy*
+    *numbers*
+    *decimal*
+    *unittest*
+    *sqlite*
